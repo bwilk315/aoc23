@@ -1,0 +1,5 @@
+
+Always look up on data file, I accidentally added one extra blank line at the
+end of aoc input data and that made my program counter a bit bigger, thus incorrect.
+
+In the part two the same occurred, input data really needs to be checked well ...
