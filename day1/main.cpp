@@ -19,7 +19,7 @@ static const std::string DIGIT_NAMES[10] {
 
 /* Finds digits in both numeric and textual form, returns a mapping of their
  * beginning indices (in the provided string context) to their integer representation. */
-std::map<int, int>  extractDigits(std::string str) {
+std::map<int, int>  extractDigits(const std::string& str) {
     auto digits = std::map<int, int>();
     // You can comment the loop below to get answer for the part 1
     // Search for textual digits
@@ -63,6 +63,8 @@ int main() {
         }
         sum += digits.at(lowest) * 10 + digits.at(greatest);
     }
-    std::cout << "Answer: " << sum << std::endl;
+    std::cout << "Answer 2: " << sum << std::endl;
+
+    file.close();
     return 0;
 }

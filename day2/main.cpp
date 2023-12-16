@@ -1,116 +1,95 @@
 
-// NEEDS REFACTORING
-
 #include <iostream>
-#include <vector>
 #include <fstream>
+#include <string>
+#include <vector>
 
-int strsplit(const std::string& str, std::string* buffer) {
-    int sLen = str.length();
-    int cursor = 0;
-    std::string part = "";
-    for(int i = 0; i < sLen; i++) {
-        if(str[i] == ' ') {
-            buffer[cursor++] = part;
-            part = ""; 
+static const int RED_BALLS = 12;
+static const int GREEN_BALLS = 13;
+static const int BLUE_BALLS = 14;
+
+/* Breaks the given string into parts using specified delimeter. */
+std::vector<std::string> split(const std::string& str, char delim) {
+    auto parts = std::vector<std::string>();
+    std::string current;
+    for(const char& ch : str) {
+        if(ch == delim) {
+            parts.push_back(current);
+            current = "";
         } else {
-            part += str[i];
+            current += ch;
         }
     }
-    buffer[cursor++] = part;
-    return cursor;
+    parts.push_back(current); // Include the last one
+    return parts;
 }
 
-void strbreak(const std::string& str, int n, std::string pair[2]) {
-    pair[0] = "";
-    pair[1] = "";
-    for(int i = 0; i < str.length(); i++) {
-        if(i < n) pair[0] += str[i];
-        else pair[1] += str[i];
-    }
+/* Returns a string containing only alphabet letters of the original. */
+std::string filter(const std::string& str) {
+    std::string out = "";
+    for(const char& ch : str)
+        if((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z'))
+            out += ch;
+    return out;
 }
 
-int maximum(std::vector<int> arr) {
+int maximum(const std::vector<int>& arr) {
     int max = 0;
-    for(auto sus : arr)
-        if(sus > max)
-            max = sus;
+    for(const int& n : arr)
+        if(n > max) max = n;
     return max;
 }
 
 int main() {
     std::ifstream file("input.txt");
-
+    if(!file.good()) {
+        std::cout << "No file called \"input.txt\" found!\n";
+        return 1;
+    }
+    
     std::string line;
-    int index = 0;
-    int idSum = 0;
-    while(index++ != 100) {
-        std::getline(file, line);
-        std::string parts[64];
-        int count = strsplit(line, parts);
-
-        bool possible = true;
+    int gameId = 0;
+    int idSum = 0; // Part 1 answer
+    int powerSum = 0; // Part 2 answer
+    while(std::getline(file, line)) {
+        gameId++;
+        auto parts = split(line, ' ');
+        // Collect amounts of balls for every grab in the current game
         int amount;
-        // Transform vectors into normal ints to get part 1
-        std::vector<int> reds;
-        std::vector<int> greens;
-        std::vector<int> blues;
-        for(int i = 2; i < count; i++) {
-            std::string part = parts[i];
+        bool isPossible = true;
+        // Containers for storing amounts of balls
+        std::vector<int> redAm;
+        std::vector<int> greenAm;
+        std::vector<int> blueAm;
+        for(int i = 2; i < (int)parts.size(); i++) {
+            std::string part = parts.at(i);
             if(i % 2 == 0) {
-                amount = atoi(part.c_str());
+                amount = std::stoi(part);
             } else {
-                std::string pair[2];
-                if(i == count - 1) {
-                    pair[0] = part;
-                    pair[1] = ";";
-                } else {
-                    strbreak(part, part.length() - 1, pair);
+                std::string color = filter(part);
+                // Additionally check for game possibility (part 1)
+                if(color == "red") {
+                    redAm.push_back(amount);
+                    if(amount > RED_BALLS) isPossible = false;
                 }
-
-                if(pair[0] == "red") {
-                    reds.push_back(amount);
-                } else if(pair[0] == "green") {
-                    greens.push_back(amount);
-                } else if(pair[0] == "blue") {
-                    blues.push_back(amount);
+                else if(color == "green") {
+                    greenAm.push_back(amount);
+                    if(amount > GREEN_BALLS) isPossible = false;
                 }
-                if(pair[1] == ";") {
-                    //std::cout << red << " " << green << " " << blue << std::endl;
-                    // if(red > 12 || green > 13 || blue > 14) {
-                    //     possible = false;
-                    //     break;
-                    // }
-                    // red = 0;
-                    // green = 0;
-                    // blue = 0;
+                else if(color == "blue") {
+                    blueAm.push_back(amount);
+                    if(amount > BLUE_BALLS) isPossible = false;
                 }
             }
         }
-        if(possible) {
-            //printf("%s\n", line.c_str());
-            //printf("Posible[%i]\n", index);
-            // for(auto sus : reds) {
-            //     printf("red %i\n", sus);
-            // }
-            // for(auto sus : greens) {
-            //     printf("green %i\n", sus);
-            // }
-            // for(auto sus : blues) {
-            //     printf("blue %i\n", sus);
-            // }
-            int maxRed = maximum(reds);
-            int maxGreen = maximum(greens);
-            int maxBlue = maximum(blues);
-            int power = maxRed * maxGreen * maxBlue;
-            //printf("At least %i %i %i\n", maximum(reds), maximum(greens), maximum(blues));
-            printf("%s\n", line.c_str());
-            //printf("%i\n", index);
-            idSum += power;
-        }
-        //break;
+        // Part 1
+        if(isPossible) idSum += gameId;
+        // Multiply the fewest number of balls of every type for part 2
+        powerSum += maximum(redAm) * maximum(greenAm) * maximum(blueAm);
     }
-    printf("%i\n", idSum);
-
+    std::cout << "Answer 1: " << idSum << std::endl;
+    std::cout << "Answer 2: " << powerSum << std::endl;
+    
     file.close();
+    return 0;
 }

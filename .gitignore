@@ -1,4 +1,7 @@
 
-# local
+# Local
 .vscode
 *.bin
+
+# Suggested by AOC Author
+input.txt
